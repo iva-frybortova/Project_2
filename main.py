@@ -1,133 +1,147 @@
 import random
 
-zadani_oddelovac = "-"
-zadani_oddelovac_pocet = 47
-zadani_povolene_prvky = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-zadani_pocet_prvku = 4
-zadani_omezeni = {"pozice": 0, "hodnota": "0"}
-zadani_gratulace = "Correct, you've guessed the right number"
-pozdrav_text = "Hi there!"
-popisek_text = """I've generated a random 4 digit number for you.
+separator = "-"
+separator_qty = 47
+allowed_elements = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+ELEMENTS = 4
+limitations = {"position": 0, "value": "0"}
+ending_text = "Correct, you've guessed the right number"
+greeting = "Hi there!"
+description = """I've generated a random 4 digit number for you.
     Let's play a bulls and cows game."""
-vyzva_text = "Enter a number: "
-
-def napis_oddelovac(oddelovac: str, n: int) -> str:
-    '''Vrátí řetězec, který se skládá z n oddělovačů'''
-    return oddelovac*n
-
-print(pozdrav_text)
-print(napis_oddelovac(zadani_oddelovac, zadani_oddelovac_pocet))
-print(popisek_text)
-print(napis_oddelovac(zadani_oddelovac, zadani_oddelovac_pocet))
+command = "Enter a number: "
 
 
-def vygeneruj_mnozinu(povolene_prvky: list, pocet_prvku: int) -> list:
-    '''Vrátí list obsahující náhodně vygenerované prvky z povolene_prvky, počet těchto prvků je pocet_prvku'''
-    mnozina = []
-    for prvek in range(pocet_prvku):
-        prvek = random.choice(povolene_prvky)
-        mnozina.append(str(prvek))
-    return mnozina
+def generate_separator(separator: str, n: int) -> str:
+    """Returns a string consisting of n separators."""
+    return separator*n
 
 
-def zkontroluj_mnozinu(mnozina: list, povolene_prvky: list, pocet_prvku: int, omezeni: dict) -> bool:
-    '''
-    Kontroluje množinu, jestli splňuje zadané podmínky: pocet_prvku, unikátní hodnoty, omezeni, povolene_prvky. 
-    Vrátí True/False.
-    ''' 
-    # mnozina má upožadovaný pocet_prvku
-    podminka_1 = len(mnozina) == pocet_prvku
+def generate_list(elements: list, element_qty: int) -> list:
+    """Returns a list containing randomly generated elements.
+    """
+    input = []
+    for element in range(element_qty):
+        element = random.choice(elements)
+        input.append(str(element))
+    return input
 
-    # mnozina má unikátní hodnoty
-    podminka_2 = len(set(mnozina)) == pocet_prvku
 
-    # na definované pozici slovniku omezeni není definovaná hodnota
-    podminka_3 = mnozina[omezeni.get("pozice")] != omezeni.get("hodnota")
-
-    # všechny prvky z mnozina jsou přítomny v povolene_prvky
-    podminka_4 = set(mnozina) <= set([str(prvek) for prvek in povolene_prvky]) 
+def check_input(input: list, elements: list,
+                element_qty: int, limits: dict) -> str:
+    """Checks if the input meets the specified conditions:
+    number of elements, unique values, limitations and allowed elements.
+    Returns str with error message or is empty if the input is validated. 
+    """
+    # input does not have required number of elements
+    if len(input) != element_qty:
+        return f"Your input must contain exactly {element_qty} characters."
+    
+    # input does not have unique values
+    elif len(set(input)) != element_qty:
+        return "All characters in your input must be unique."
+    
+    # input contains restricted value at specified position 
+    elif input[limits.get("position")] == limits.get("value"):
+        return f"""{limits.get("value")} is not allowed 
+at position {limits.get("position")+1}.
+"""
+    
+    # input is not subset of allowed elements
+    elif not(set(input) <= set([str(element) for element in elements])):
+        return f"""Your input includes invalid characters. 
+Only these characters are allowed: {elements}.
+"""
    
-    return podminka_1 and podminka_2 and podminka_3 and podminka_4
-
-
-def hledej_byky(vstup_uzivatel: list, vstup_program: list, pocet_prvku: int) -> int:
-    '''Prochází množinu vstup_uzivatel, porovnává ji s vstup_program. 
-    Pokud je nějaký prvek z vstup_uzivatel na stejné pozici jako v množině vstup_program, započítá jej jako býka
-    '''
-    pocet_byku = 0
-    for i in range(pocet_prvku):
-        if vstup_uzivatel[i] == vstup_program[i]:
-            pocet_byku += 1
-    return pocet_byku
-
-
-def hledej_kravy(vstup_uzivatel: list, vstup_program: list, pocet_prvku: int) -> int:
-    '''Prochází množinu vstup_uzivatel, porovnává ji s vstup_program. 
-    Pokud je nějaký prvek z vstup_uzivatel přítomen v množině vstup_program, započítá jej jako krávu
-    '''
-    pocet_krav = 0
-    for i in range(pocet_prvku):
-        if vstup_uzivatel[i] in vstup_program:
-            pocet_krav += 1
-    return pocet_krav
-
-
-# Spustí se smyčka, ve které se generuje číslo a probíhá kontrola. Jakmile číslo splní podmínky, smyčka se ukončí.
-while True:
-    vygenerovane_cislo = vygeneruj_mnozinu(zadani_povolene_prvky, zadani_pocet_prvku)    
-
-    if zkontroluj_mnozinu(vygenerovane_cislo, zadani_povolene_prvky, zadani_pocet_prvku, zadani_omezeni):  
-        break
-
-print(vyzva_text)
-print(napis_oddelovac(zadani_oddelovac, zadani_oddelovac_pocet))
-
-pocet_pokusu = 0    
-tvuj_pocet_byku = 0
-
-# Spustí se smyčka, ve které je uživatel vyzván k napsání vstupu ve správném formátu. Smyčka běží tak dlouho, dokud uživatel nezíská potřebný počet býků.
-while tvuj_pocet_byku < zadani_pocet_prvku:    
-    # uživatelský vstup se vloží do proměnné hadane_cislo jako list
-    hadane_cislo = list(input())
-    pocet_pokusu +=1
-
-    # probíhá kontrola formátu vstupu
-    if zkontroluj_mnozinu(hadane_cislo, zadani_povolene_prvky, zadani_pocet_prvku, zadani_omezeni):
-        
-        # spustí se fce hledající býky     
-        tvuj_pocet_byku = hledej_byky(hadane_cislo, vygenerovane_cislo, zadani_pocet_prvku)
-        if tvuj_pocet_byku == zadani_pocet_prvku:
-            break        
-        elif tvuj_pocet_byku == 1:
-            format_byci = "bull"            
-        else:
-            format_byci = "bulls"            
-
-        # spustí se fce hledající krávy, od výsledného počtu se odečte počet býků        
-        tvuj_pocet_krav = hledej_kravy(hadane_cislo, vygenerovane_cislo, zadani_pocet_prvku) - tvuj_pocet_byku
-        if tvuj_pocet_krav == 1:
-            format_kravy = "cow"
-        else:
-            format_kravy = "cows"
-
-        # naformátuje se odpověď
-        print(f"{tvuj_pocet_byku} {format_byci}, {tvuj_pocet_krav} {format_kravy}")        
-        print(napis_oddelovac(zadani_oddelovac, zadani_oddelovac_pocet))                       
-        
+   # all validation passed
     else:
-        # uživatelův vstup není ve správném formátu
-        omezeni_pozice, omezeni_hodnota = zadani_omezeni.get("pozice")+1, zadani_omezeni.get("hodnota")
-        print(f"Your input should contain {zadani_pocet_prvku} unique characters \nout of this list: {zadani_povolene_prvky}. \n{omezeni_hodnota} is not allowed at position {omezeni_pozice}.")
-        print(napis_oddelovac(zadani_oddelovac, zadani_oddelovac_pocet))
+        return ""
 
-# uživatel uhodl generovaný vstup
-print(zadani_gratulace)
-if pocet_pokusu == 1:
-    format_pokus = "guess"
-else:
-    format_pokus = "guesses"
 
-# naformátuje se odpověď
-print(f"in {pocet_pokusu} {format_pokus}!")
-print(napis_oddelovac(zadani_oddelovac, zadani_oddelovac_pocet))
-print("That's amazing!")
+def find_bulls(user_input: list, program_input: list, element_qty: int) -> int:
+    """Iterates through the list user_input, comparing it with program_input.
+    If any element of user_input is at the same position
+    as in the list program_input, it counts it as a bull
+    """
+    bull_qty = 0
+    for i in range(element_qty):
+        if user_input[i] == program_input[i]:
+            bull_qty += 1
+    return bull_qty
+
+
+def find_cows(user_input: list, program_input: list, element_qty: int) -> int:
+    """Iterates through the user_input, comparing it with program_input.
+    If any element of user_input is present in the list program_input,
+    it counts it as a cow.
+    """
+    cow_qty = 0
+    for i in range(element_qty):
+        if user_input[i] in program_input:
+            cow_qty += 1
+    return cow_qty
+
+
+if __name__ == "__main__":
+    print(greeting)
+    print(generate_separator(separator, separator_qty))
+    print(description)
+    print(generate_separator(separator, separator_qty))
+
+    # generates list of elements and validates it
+    while True:
+        generated_list = generate_list(allowed_elements, ELEMENTS)        
+        error = check_input(generated_list, allowed_elements, ELEMENTS, limitations)
+        if len(error) == 0:
+            break
+
+    print(command)
+    print(generate_separator(separator, separator_qty))
+
+    attempt_qty = 0
+    your_bull_qty = 0
+
+    # the main game loop
+    while your_bull_qty < ELEMENTS:
+        #  the user input is stored in the variable guess in the list format
+        guess = list(input())
+        attempt_qty +=1
+
+        # user input format is validated
+        error = check_input(guess, allowed_elements, ELEMENTS, limitations)
+        if len(error) == 0:
+            
+            # the function searching for bulls runs
+            your_bull_qty = find_bulls(guess, generated_list, ELEMENTS)
+            if your_bull_qty == ELEMENTS:
+                break
+            elif your_bull_qty == 1:
+                format_bulls = "bull"      
+            else:
+                format_bulls = "bulls"
+
+            # the function searching for cows runs
+            your_cow_qty = find_cows(guess, generated_list, ELEMENTS) - your_bull_qty
+            if your_cow_qty == 1:
+                format_cows = "cow"
+            else:
+                format_cows = "cows"
+            
+            print(f"{your_bull_qty} {format_bulls}, {your_cow_qty} {format_cows}")
+            print(generate_separator(separator, separator_qty))
+            
+        else:
+            # error message if the user's input is not validated
+            print(error)
+            print(generate_separator(separator, separator_qty))
+
+    # print success message
+    print(ending_text)
+    
+    if attempt_qty == 1:
+        format_attempts = "guess"
+    else:
+        format_attempts = "guesses"
+    print(f"in {attempt_qty} {format_attempts}!")
+    print(generate_separator(separator, separator_qty))
+    print("That's amazing!")
